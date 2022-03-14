@@ -3,7 +3,7 @@ Simulate sharphound but coding in powershell...
 
 ## Specially Thanks to:
 - #### [ConvertTo-Json Powershell 2](https://github.com/EliteLoser/ConvertTo-Json)
-  Mark: I mergerd this repository into my scripts XD (with author permission: [portal](https://github.com/EliteLoser/ConvertTo-Json/issues/5))
+  Mark: I merged his repository into my scripts XD (with author permission: [portal](https://github.com/EliteLoser/ConvertTo-Json/issues/5))
 - #### [@EliteLoser](https://github.com/EliteLoser)
 
 ## Work in progress now

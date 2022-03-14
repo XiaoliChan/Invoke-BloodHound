@@ -1,5 +1,5 @@
 # Bloodhound.PS
-Simulate sharphound but in powershell
+Simulate sharphound but coding in powershell...
 
 ## Specially Thanks to:
 - #### [ConvertTo-Json Powershell 2](https://github.com/EliteLoser/ConvertTo-Json)

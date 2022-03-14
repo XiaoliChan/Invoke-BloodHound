@@ -1,7 +1,8 @@
 # Picked the rules from SharpHoundCommon lib
 
-# Only for powershell 2.0, for more detail, plz go to this repository
-# https://github.com/EliteLoser/ConvertTo-Json
+# Only for powershell 2.0. For more detail, you can check this repository.
+# - https://github.com/EliteLoser/ConvertTo-Json
+# For collector main function, please goto line 308.
 function EscapeJson {
     param(
         [String] $String)

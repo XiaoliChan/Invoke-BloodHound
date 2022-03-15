@@ -304,6 +304,7 @@ function ConvertTo-STJson {
     }
 
 }
+
 # Main function
 function Invoke-mini
 {
@@ -338,7 +339,8 @@ function Invoke-mini
         $currentDomain = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain() | foreach {$_.GetDirectoryEntry()}
         
         #I want to use SecurityMasks to get Aces, but it seen it did not work on windows 2008
-        $searcher.SecurityMasks = [System.DirectoryServices.SecurityMasks]::Dacl -bor [System.DirectoryServices.SecurityMasks]::Owner
+        #SecurityMasks seens only work on > 2008/win7
+        #$searcher.SecurityMasks = [System.DirectoryServices.SecurityMasks]::Dacl -bor [System.DirectoryServices.SecurityMasks]::Owner
 	    
         #searcher.PageSize = 10000
         #This probably will spend a long time in a large scale AD XD
@@ -357,16 +359,30 @@ function Invoke-mini
                     $tempDict = @{}
                     $Name = $a | Format-Table Name -HideTableHeaders | Out-String
                     foreach ($tag in $Name.Split([Environment]::NewLine, [StringSplitOptions]::RemoveEmptyEntries)){
-                        if (($tag.Trim() -ne "ntsecuritydescriptor") -and ($tag.Trim() -ne "usercertificate") -and ($tag.Trim() -inotmatch "msexch")){
-                            $Key = $($tag.Trim())
-                            $Value = $($single.properties[$tag.Trim()])
-                            $tempDict.Add($Key,$Value)
-                        }
-                        if ($tag.Trim() -eq "adspath"){
-                            #Get ACEs
-                            $ADobject=[ADSI]"$($signle.Properties.adspath)";
-                            $Aces = $ADobject.psbase.get_ObjectSecurity().getAccessRules($true, $true, [system.security.principal.NtAccount]) | select-object ActiveDirectoryRights,IsInheritedq,ObjectType,InheritedObjectType,ObjectFlags,AccessControlType,IdentityReference,IsInherited,InheritanceFlags,PropagationFlags | convertto-stjson
-                            $tempDict.Add("Aces",$Aces)
+                        # Backup condition: ($tag.Trim() -ne "ntsecuritydescriptor") -and ($tag.Trim() -ne "usercertificate") -and ($tag.Trim() -inotmatch "msexch")
+                        # I think exclude object is better than $searcher.propertiestoload.add function
+                        $Key = $($tag.Trim())
+                        if (($Key -ne "usercertificate") -and ($Key -inotmatch "msexch") -and ($Key -ne "msds-managedpasswordid") -and ($Key -ne "ms-ds-creatorsid")){
+                            if ($Key -eq "adspath"){
+                                # Add adspath
+                                $Value = $($single.properties[$Key])
+                                $tempDict.Add($Key,$Value)
+                                # Use adspath to process Aces
+                                $ADobject=[ADSI]"$Value"
+                                $Aces = $ADobject.psbase.get_ObjectSecurity().getAccessRules($true, $true, [system.security.principal.NtAccount]) | select-object ActiveDirectoryRights,IsInheritedq,ObjectType,InheritedObjectType,ObjectFlags,AccessControlType,IdentityReference,IsInherited,InheritanceFlags,PropagationFlags
+                                $tempDict.Add("Aces",$Aces)
+                            } elseif ($key -eq "objectguid"){
+                                $rawguid = $single.properties.objectguid[0]
+                                $Value = new-object guid(,$rawguid)
+                                $tempDict.Add($Key,$Value)
+                            } elseif ($key -eq "objectsid"){
+                                $rawsid = $single.properties.objectsid[0]
+                                $Value = (New-object System.Security.Principal.SecurityIdentifier($rawsid,0)).value
+                                $tempDict.Add($Key,$Value)
+                            } else{
+                                $Value = $($single.properties[$Key])
+                                $tempDict.Add($Key,$Value)
+                            }
                         }
                     }
                     [void]$tempList.Add($tempDict)
@@ -391,6 +407,6 @@ function Invoke-mini
     }
     write-output "[+] Compressed all the data files to $($fileName)"
     write-output "[+] Remove useless files"
-    Remove-Item -Path "$($Date)_All*.json" -Force
+    Remove-Item -Path "All*.json" -Force
 }
 Invoke-mini

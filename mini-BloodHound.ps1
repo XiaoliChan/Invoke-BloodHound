@@ -362,7 +362,9 @@ function Invoke-mini
                         # Backup condition: ($tag.Trim() -ne "ntsecuritydescriptor") -and ($tag.Trim() -ne "usercertificate") -and ($tag.Trim() -inotmatch "msexch")
                         # I think exclude object is better than $searcher.propertiestoload.add function
                         $Key = $($tag.Trim())
-                        if (($Key -ne "usercertificate") -and ($Key -inotmatch "msexch") -and ($Key -ne "msds-managedpasswordid") -and ($Key -ne "ms-ds-creatorsid")){
+                        # Blacklists, exclude properties of collection
+                        $blacklists = @('usercertificate','msexch','msds-managedpasswordid','ms-ds-creatorsid','dscorepropagationdata')
+                        if ($null -eq ($blacklists | ? { $Key -match $_ })){
                             if ($Key -eq "adspath"){
                                 # Add adspath
                                 $Value = $($single.properties[$Key])

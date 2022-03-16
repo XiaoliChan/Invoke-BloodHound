@@ -345,7 +345,7 @@ function Invoke-mini
     $Date = Get-Date -UFormat %Y%m%d%H%M%S
     $fileName = "$($Date)_mini-BloodHound"
     $collections = @{
-        #"AllObjects"="(objectclass=*)"
+        "AllObjects"="(objectclass=*)"
         "AllUsers"="(samaccounttype=805306368)"
         "AllGroups"="|(samaccounttype=268435456)(samaccounttype=268435457)(samaccounttype=536870912)(samaccounttype=536870913)"
         "AllPrimaryGroups"="(primarygroupid=*)"
@@ -388,7 +388,8 @@ function Invoke-mini
                         # Blacklists, exclude properties of collection
                         $blacklists = @('usercertificate','msexch','msds-managedpasswordid','ms-ds-creatorsid','dscorepropagationdata')
                         if ($null -eq ($blacklists | ? { $Key -match $_ })){
-                            if ($Key -eq "adspath"){
+			    # Do not Process ACEs in AllObjects
+                            if (($Key -eq "adspath") -and ($collectObject -ne "AllObjects")){
                                 # Add adspath
                                 $Value = $($single.properties[$Key])
                                 $tempDict.Add($Key,$Value)

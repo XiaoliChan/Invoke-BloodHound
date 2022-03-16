@@ -10,8 +10,8 @@ Simulate sharphound but coding in powershell...
 - Ugly code. ¯\\_(ツ)_/¯
 
 ## Todo
-- Convert SID when information collecting. (Done)
-- Resolve ACEs.
+- Convert SID when information collecting. -Done
+- Resolve ACEs (I just reolve IdentityReference to SecurityIdentifier). -Done
 - Make a converter to process hole the data.
 - Some parts of code didn't make sense now.
 

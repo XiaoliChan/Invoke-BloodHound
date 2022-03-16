@@ -304,8 +304,24 @@ function ConvertTo-STJson {
     }
 
 }
+# Main function: Process ACEs, reolve IdentityReference to SecurityIdentifier
+function ProcessACEs($ACEs){
+	$FullACEs = [System.Collections.ArrayList]@()
+	foreach ($signleACE in $ACEs){
+		$tmp_AceDict = @{}
+		$Query = new-object system.Security.principal.ntaccount "$($signleACE.IdentityReference.value)"
+		$sid = $Query.Translate([type]'System.Security.Principal.SecurityIdentifier')
+		$Ace_attributes =  $signleACE | get-member -memberType NoteProperty | select -expandproperty Name
+		$tmp_AceDict.Add("SecurityIdentifier",$sid.value)
+		foreach ($i in $Ace_attributes){
+			$tmp_AceDict.Add($i,$signleACE.$i)
+		}
+		[void]$FullACEs.Add($tmp_AceDict)
+	}
+	return $FullACEs
+}
 
-# Main function
+# Main function: mini BloodHound
 function Invoke-mini
 {
     #Check existed function
@@ -372,7 +388,8 @@ function Invoke-mini
                                 # Use adspath to process Aces
                                 $ADobject=[ADSI]"$Value"
                                 $Aces = $ADobject.psbase.get_ObjectSecurity().getAccessRules($true, $true, [system.security.principal.NtAccount]) | select-object ActiveDirectoryRights,IsInheritedq,ObjectType,InheritedObjectType,ObjectFlags,AccessControlType,IdentityReference,IsInherited,InheritanceFlags,PropagationFlags
-                                $tempDict.Add("Aces",$Aces)
+                                $FullACEs = ProcessACEs $Aces
+                                $tempDict.Add("Aces",$FullACEs)
                             } elseif ($key -eq "objectguid"){
                                 $rawguid = $single.properties.objectguid[0]
                                 $Value = new-object guid(,$rawguid)

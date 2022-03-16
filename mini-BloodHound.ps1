@@ -312,7 +312,7 @@ function ProcessACEs($ACEs){
         	# Add known attributes into dict
         	$ACE_attributes =  $singleACE | get-member -memberType *Property | select -expandproperty Name
         	foreach ($i in $ACE_attributes){
-			$tmp_ACEDict.Add($i,$signleACE.$i)
+			$tmp_ACEDict.Add($i,$singleACE.$i)
 		}
         	# For 2008, some IdentityReference always is sid object in ACEs, can't be resolved
         	try{

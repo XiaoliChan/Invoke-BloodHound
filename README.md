@@ -1,4 +1,4 @@
-# BloodHound.PS
+# Invoke-BloodHound
 Simulate sharphound but coding in powershell...
 
 ## Specially Thanks to:
